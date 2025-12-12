@@ -310,6 +310,47 @@ TORCH_CUDA_ARCH_LIST is critical, especially moving between
 - The exercise was less about beating NVIDIA’s own optimized kernels and more about understanding the entire stack:
     - From Python scripts → C++ binding → CUDA kernels → H100 hardware + NVML power monitoring.
 ---
+
+## What This Project Taught Us (Final Reflection)
+**1. End-to-End GPU Optimization Is a Multi-Layer Stack**:
+We had to understand and debug interactions between: 
+- Python drivers 
+- PyTorch C++ frontend 
+- CUDA kernels 
+- nvcc compiler 
+- H100 hardware architecture 
+- NVML power instrumentation 
+
+**2. GPU Performance Is Memory-Bound More Often Than Compute-Bound**:
+Memory hierarchy design dominates GPU algorithm 
+performance.FlashAttention’s breakthrough is not "faster 
+math" but "better memory movement” 
+
+**3. Block/Tiling Configuration Has Real Energy Implications**:
+We discovered that:
+- Oversaturating SMs increases instantaneous power.
+- Moderate occupancy often yields superior energy-per-workload.
+- Block sizes act as a tuning knob between performance and efficiency. 
+- This insight is rarely obvious until you run real power measurements. 
+
+**4. H100 MIG behaves differently from consumer GPUs**:
+We originally developed some parts on an RTX 2080 Ti (sm_75) and later moved to H100 MIG (sm_90):
+- H100 has more stable power curves.
+- Its SM scheduling is more aggressive.
+- It throttles differently under sustained load.
+These differences taught us about hardware portability and the importance of testing across architectures.
+
+**5. Energy Matters More Than Speed Alone**:
+A kernel that is “fast” but “power hungry” may be worse overall than a moderately slower one that uses half the power.
+Future transformer kernels must balance:
+
+- computation
+- memory traffic
+- power draw
+- temperature
+- cost per token
+
+---
 ## Conclusion
 The results of Dynamic FlashAttention++ clearly show that power-aware GPU scheduling can substantially improve the efficiency of Transformer attention workloads. By comparing baseline PyTorch attention, FlashAttention, and our custom CUDA kernel on the H100 MIG, we observed that thoughtful kernel design—especially tiling, optimized memory movement, and controlled SM occupancy—directly reduces latency, peak power draw, and total energy consumption. While baseline and FlashAttention kernels exhibit high power usage due to full attention computation and heavy memory traffic, our custom kernel achieves up to 20× faster execution and more than 30× lower energy usage for longer sequence lengths. This project demonstrates that optimizing memory behavior and execution configuration is often more impactful than increasing raw FLOPs, and highlights the growing importance of energy-efficient GPU algorithm design for future large-scale AI systems.
 
