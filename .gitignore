@@ -1,0 +1,27 @@
+# Python / venv
+my_flash_env/
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Build / compile outputs
+build/
+dist/
+*.o
+*.a
+*.so
+*.out
+
+# Logs / results
+*.log
+outputs/
+results/
+checkpoints/
+
+# OS/editor
+.DS_Store
+.vscode/
